@@ -1,0 +1,63 @@
+@startuml sequenceDiagram
+actor User
+
+' 定義參與者
+participant "User Interface" as UI
+participant "Frontend" as FE
+participant "Backend" as BE
+database "Database" as DB
+
+' 階段一：註冊與登入
+== 註冊與登入 ==
+
+User -> UI: 輸入註冊信息
+activate UI
+UI -> FE: 提交註冊信息
+activate FE
+FE -> BE: POST /register
+activate BE
+BE -> DB: 儲存用戶信息
+activate DB
+DB --> BE: 註冊確認
+deactivate DB
+BE --> FE: 註冊成功
+deactivate BE
+FE --> UI: 顯示註冊成功
+deactivate FE
+UI --> User: 顯示成功信息
+deactivate UI
+
+User -> UI: 輸入登入信息
+activate UI
+UI -> FE: 提交登入信息
+activate FE
+FE -> BE: POST /login
+activate BE
+BE -> DB: 驗證用戶
+activate DB
+DB --> BE: 登入確認
+deactivate DB
+BE --> FE: 登入成功
+deactivate BE
+FE --> UI: 顯示登入成功
+deactivate FE
+UI --> User: 顯示成功信息
+deactivate UI
+
+' 階段二：進入聊天室
+== 進入聊天室 ==
+
+User -> UI: 請求加入聊天室
+activate UI
+UI -> FE: 轉發請求
+activate FE
+FE -> BE: WebSocket /join_room
+activate BE
+BE --> FE: WebSocket Response (async)
+deactivate BE
+FE --> UI: 顯示聊天室
+deactivate FE
+UI --> User: 顯示聊天室界面
+deactivate UI
+
+@enduml

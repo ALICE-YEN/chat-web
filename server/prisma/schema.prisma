@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Member {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) @db.Uuid
+  username  String?  @db.VarChar(15)
+  image     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  contactsSent     Contact[] @relation("ContactsSent") // 多對一
+  contactsReceived Contact[] @relation("ContactsReceived") // 多對一
+  chatSender       Chat[]    @relation("ChatSender") // 多對一
+  chatRecipients   Chat[]    @relation("ChatRecipients") // 多對多
+  chatRoomMembers  ChatRoom[] @relation("ChatRoomMembers")   // 多對多
+
+  @@map("members")
+}
+
+model Contact {
+  id                Int      @id @default(autoincrement())
+  memberUuid        String   @db.Uuid @map("member_uuid") 
+  contactMemberUuid String   @db.Uuid @map("contact_member_uuid")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  sentContact     Member @relation("ContactsSent", fields: [memberUuid], references: [uuid]) // 一對多
+  receivedContact Member @relation("ContactsReceived", fields: [contactMemberUuid], references: [uuid]) // 一對多
+
+  @@map("contacts")
+}
+
+model ChatRoom {
+  id        Int      @id @default(autoincrement())
+  selected  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members   Member[] @relation("ChatRoomMembers") // 多對多
+  chat Chat[] @relation("Chat")  // 多對一
+
+  @@map("chat_rooms")
+}
+
+model Chat {
+  id         Int      @id @default(autoincrement())
+  chatRoomId Int      @map("chat_room_id")
+  sender     String   @db.Uuid
+  content    String? // 先假設聊天都是純文字
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  chatRoom       ChatRoom @relation("Chat", fields: [chatRoomId], references: [id]) // 一對多
+  chatSender     Member   @relation("ChatSender", fields: [sender], references: [uuid]) // 一對多
+  recipients     Member[] @relation("ChatRecipients") // 多對多
+
+  @@map("chats")
+}

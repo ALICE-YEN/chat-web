@@ -1,0 +1,17 @@
+@startuml Use Case Diagram
+left to right direction
+actor "User" as user
+usecase "Register" as register
+usecase "Login" as login
+usecase "Create Chat Room" as createChatRoom
+usecase "Join Chat Room" as joinChatRoom
+usecase "Send Message" as sendMessage
+usecase "Receive Message" as receiveMessage
+
+user --> register
+user --> login
+user --> createChatRoom
+user --> joinChatRoom
+user --> sendMessage
+user --> receiveMessage
+@enduml
