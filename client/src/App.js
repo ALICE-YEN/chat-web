@@ -9,7 +9,6 @@ import { SocketProvider } from "./contexts/SocketProvider";
 function App() {
   // 保存 id 到 LocalStorage
   const [id, setId] = useLocalStorage("id", "");
-  console.log("id", id);
 
   const dashboard = (
     <SocketProvider id={id}>

@@ -3,17 +3,15 @@ import { ListGroup } from "react-bootstrap";
 import { useConversations } from "../contexts/ConversationsProvider";
 
 export default function Conversations() {
-  // recipients 相同的，沒有整併，會有多個，待處理
   const { conversations, selectConversationIndex } = useConversations();
-  console.log("conversations", conversations);
 
   return (
     <ListGroup variant="flush">
       {conversations.map((conversation, index) => (
         <ListGroup.Item
-          key={index}
+          key={conversation.chatRoomId}
           action
-          onClick={() => selectConversationIndex(index)} // setSelectedConversationIndex
+          onClick={() => selectConversationIndex(conversation.chatRoomId)}
           active={conversation.selected}
         >
           {conversation.recipients.map((r) => r.name).join(", ")}

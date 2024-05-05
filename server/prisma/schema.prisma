@@ -19,7 +19,7 @@ model Member {
   contactsReceived Contact[] @relation("ContactsReceived") // 多對一
   chatSender       Chat[]    @relation("ChatSender") // 多對一
   chatRecipients   Chat[]    @relation("ChatRecipients") // 多對多
-  chatRoomMembers  ChatRoom[] @relation("ChatRoomMembers")   // 多對多
+  chatRooms  ChatRoom[] @relation("ChatRoomMembers")   // 多對多
 
   @@map("members")
 }

@@ -7,7 +7,6 @@ import { axiosUrl } from "../lib/Constant.js";
 
 export default function NewConversationModal({ closeModal, uuid }) {
   const [selectedContactIds, setSelectedContactIds] = useState([]);
-  console.log("selectedContactIds", selectedContactIds);
   const [contacts, setContacts] = useState([]);
   // const { contacts } = useContacts();
   const { createConversation } = useConversations();

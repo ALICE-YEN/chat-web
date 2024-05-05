@@ -3,6 +3,8 @@ export const typeDefs = `
     getMember(uuid: String!): Member
     getMembers: [Member!]
     getContactsByMemberUuid(uuid: String!): [Contact!]
+    getChatRoomByMembers(members: [String!]): ChatRoom
+    getChatRoomsByMemberUuid(memberUuid: String!): Member
   }
 
   type Mutation {
@@ -10,6 +12,8 @@ export const typeDefs = `
     register(name: String, image: String, contacts: [String!]): Member
     connectContact(memberUuid: String!, contactMemberUuid: String!): Contact
     createChat(data: createChatInput): Chat
+    createChatRoom(members: [String!]): ChatRoom
+    getOrCreateChatRoom(members: [String!]): ChatRoom
   }
 
   type Member {
@@ -22,7 +26,7 @@ export const typeDefs = `
     contactsReceived: [Contact!]
     chatSender: [Chat!]
     chatRecipients: [Chat!]
-    chatRoomMembers: [ChatRoom!]
+    chatRooms: [ChatRoom!]
   }
 
   type Contact {
@@ -58,8 +62,8 @@ export const typeDefs = `
   input createChatInput {
     sender: String!
     recipients: [String!]
-    content: String
-    chatRoomId: Int
+    content: String!
+    chatRoomId: Int!
   }
 
   scalar DateTime
