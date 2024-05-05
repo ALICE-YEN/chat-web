@@ -2,20 +2,29 @@ import { getMember, getMembers } from "./member.js";
 import { login } from "./login.js";
 import { register } from "./register.js";
 import { getContactsByMemberUuid, connectContact } from "./contact.js";
-import { createChat } from "./conversation.js";
-import { context } from "../context.js";
+import { createChat } from "./chat.js";
+import {
+  getChatRoomByMembers,
+  createChatRoom,
+  getOrCreateChatRoom,
+  getChatRoomsByMemberUuid,
+} from "./chatRoom.js";
 
 export const resolvers = {
   Query: {
     getMember,
     getMembers,
     getContactsByMemberUuid,
+    getChatRoomByMembers,
+    getChatRoomsByMemberUuid,
   },
   Mutation: {
     login,
     register,
     connectContact,
     createChat,
+    createChatRoom,
+    getOrCreateChatRoom,
   },
   // 一定要寫此 apollo graphql studio 才會顯示關聯
   Member: {
@@ -39,10 +48,10 @@ export const resolvers = {
         where: { id: parent?.id },
       }).chatRecipients();
     },
-    chatRoomMembers: (parent, _args, context) => {
+    chatRooms: (parent, _args, context) => {
       return context.prisma.Member.findUnique({
         where: { id: parent?.id },
-      }).chatRoomMembers();
+      }).chatRooms();
     },
   },
   Contact: {

@@ -1,0 +1,33 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "client/**"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "client/**"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
+          cache-dependency-path: ./client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm install
+
+      - name: ESLint
+        working-directory: ./client
+        run: npx eslint .

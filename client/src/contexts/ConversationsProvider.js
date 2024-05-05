@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect, useCallback } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import axios from "axios";
-// import { useContacts } from "./ContactsProvider";
 import { useSocket } from "./SocketProvider";
 import { axiosUrl } from "../lib/Constant.js";
 
@@ -21,8 +20,10 @@ export function ConversationsProvider({ id, children }) {
   // const { contacts } = useContacts();
   const socket = useSocket();
 
+  // GetContactsByMemberUuid、GetChatRoomsByMemberUuid 應該可以整併成一個 api，否則就失去 graphQL 的優勢
   // 用很醜的方式整理 contacts，這個要從後端檢查能否讓前端不要做這麼多處理(篩選出不重複的聯絡人)
   useEffect(() => {
+    // 取得連絡人
     axios({
       method: "post",
       url: axiosUrl,
@@ -30,8 +31,6 @@ export function ConversationsProvider({ id, children }) {
         query: `query GetContactsByMemberUuid($uuid: String!) {
             getContactsByMemberUuid(uuid: $uuid) {
               memberUuid
-              contactMemberUuid
-              createdAt
               receivedContact {
                 username
                 uuid
@@ -71,25 +70,105 @@ export function ConversationsProvider({ id, children }) {
         setContacts(contactIds);
       }
     });
+
+    // 取得聊天室
+    axios({
+      method: "post",
+      url: axiosUrl,
+      data: {
+        query: `query GetChatRoomsByMemberUuid($memberUuid: String!) {
+          getChatRoomsByMemberUuid(memberUuid: $memberUuid) {
+            uuid
+            chatRooms {
+              id
+              members {
+                uuid
+              }
+              chat {
+                id
+                content
+                sender
+                recipients {
+                  uuid
+                }
+              }
+            }
+          }
+        }`,
+        variables: { memberUuid: id },
+      },
+    }).then((res) => {
+      const data = res?.data?.data?.getChatRoomsByMemberUuid;
+      const chatRooms = data.chatRooms.map((chatRoom) => {
+        const recipients = chatRoom.members.reduce((acc, member) => {
+          if (member.uuid !== id) {
+            acc.push(member.uuid);
+          }
+          return acc;
+        }, []);
+        const messages = chatRoom.chat.map((chat) => {
+          return {
+            text: chat.content,
+            sender: chat.sender,
+          };
+        });
+        return { chatRoomId: chatRoom.id, recipients, messages };
+      });
+
+      setConversations(chatRooms);
+    });
   }, []);
 
   function createConversation(recipients) {
-    setConversations((prevConversations) => {
-      console.log("prevConversations", prevConversations);
-      return [...prevConversations, { recipients, messages: [] }];
+    axios({
+      method: "post",
+      url: axiosUrl,
+      data: {
+        query: `mutation GetOrCreateChatRoom($members: [String!]) {
+          getOrCreateChatRoom(members: $members) {
+            id
+            members {
+              uuid
+            }
+            selected
+            updatedAt
+            createdAt
+          }
+        }`,
+        variables: { members: [...recipients, id] },
+      },
+    }).then((res) => {
+      const data = res?.data?.data?.getOrCreateChatRoom;
+
+      setConversations((prevConversations) => {
+        const newRecipientsSorted = [...recipients].sort().join(",");
+
+        const alreadyExists = prevConversations.some((conversation) => {
+          const currentRecipientsSorted = [...conversation.recipients]
+            .sort()
+            .join(",");
+          return newRecipientsSorted === currentRecipientsSorted;
+        });
+
+        setSelectedConversationIndex(data.id);
+
+        if (!alreadyExists) {
+          return [
+            ...prevConversations,
+            { chatRoomId: data.id, recipients, messages: [] },
+          ];
+        }
+        return prevConversations;
+      });
     });
   }
 
   const addMessageToConversation = useCallback(
     ({ recipients, text, sender }) => {
       setConversations((prevConversations) => {
-        // madeChange 判斷 conversation 是否是新的
-        let madeChange = false;
         const newMessage = { sender, text };
         const newConversations = prevConversations.map((conversation) => {
-          // recipients 是原本就有的
           if (arrayEquality(conversation.recipients, recipients)) {
-            madeChange = true;
             return {
               ...conversation,
               messages: [...conversation.messages, newMessage],
@@ -99,12 +178,7 @@ export function ConversationsProvider({ id, children }) {
           return conversation;
         });
 
-        if (madeChange) {
-          return newConversations;
-        } else {
-          // 新的 conversation
-          return [...prevConversations, { recipients, messages: [newMessage] }];
-        }
+        return newConversations;
       });
     },
     [setConversations]
@@ -122,15 +196,17 @@ export function ConversationsProvider({ id, children }) {
 
   function sendMessage(recipients, text) {
     // 通過 WebSocket 連接向伺服器發送一個 "send-message" 事件
-    socket.emit("send-message", { recipients, text });
+    socket.emit("send-message", {
+      chatRoomId: Number(selectedConversationIndex),
+      recipients,
+      text,
+    });
 
     addMessageToConversation({ recipients, text, sender: id });
   }
 
-  const formattedConversations = conversations.map((conversation, index) => {
+  const formattedConversations = conversations.map((conversation) => {
     const recipients = conversation.recipients.map((recipient) => {
-      console.log("recipient", recipient);
-      console.log("contacts", contacts);
       const contact = contacts.find((contact) => {
         return contact.id === recipient;
       });
@@ -138,7 +214,6 @@ export function ConversationsProvider({ id, children }) {
       return { id: recipient, name };
     });
 
-    // 給 name 已知的值 contact.name
     const messages = conversation.messages.map((message) => {
       const contact = contacts.find((contact) => {
         return contact.id === message.sender;
@@ -148,16 +223,18 @@ export function ConversationsProvider({ id, children }) {
       return { ...message, senderName: name, fromMe };
     });
 
-    const selected = index === selectedConversationIndex;
+    const selected = conversation.chatRoomId === selectedConversationIndex;
     return { ...conversation, messages, recipients, selected };
   });
 
   const value = {
-    conversations: formattedConversations, // Conversations
-    selectedConversation: formattedConversations[selectedConversationIndex], // Dashboard、OpenConversation
-    sendMessage, //OpenConversation
-    selectConversationIndex: setSelectedConversationIndex, // Conversations
-    createConversation, // NewConversationModal
+    conversations: formattedConversations,
+    selectedConversation: formattedConversations.find(
+      (conversation) => conversation.chatRoomId === selectedConversationIndex
+    ),
+    sendMessage,
+    selectConversationIndex: setSelectedConversationIndex,
+    createConversation,
   };
 
   return (
