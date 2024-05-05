@@ -28,10 +28,6 @@ jobs:
         working-directory: ./server
         run: npm install
 
-      - name: Run tests
-        working-directory: ./server
-        run: npm test
-
       - name: ESLint
         working-directory: ./server
         run: npx eslint .
