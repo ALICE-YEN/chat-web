@@ -1,5 +1,5 @@
 import React from "react";
-import Login from "./components/Login";
+import UserAccess from "./components/UserAccess";
 import useLocalStorage from "./hooks/useLocalStorage";
 import Dashboard from "./components/Dashboard";
 import { ContactsProvider } from "./contexts/ContactsProvider";
@@ -20,7 +20,7 @@ function App() {
     </SocketProvider>
   );
 
-  return id ? dashboard : <Login onIdSubmit={setId} />;
+  return id ? dashboard : <UserAccess onIdSubmit={setId} />;
 }
 
 export default App;

@@ -1,14 +1,14 @@
 // 可以縮寫 rfc，產生模板
-// 待補錯誤處理
 
 import React, { useRef } from "react";
 import axios from "axios";
 import { Container, Form, Button } from "react-bootstrap";
 import { axiosUrl } from "../lib/constants.js";
 
-export default function Login({ onIdSubmit, setShowLogin }) {
+export default function Login({ onIdSubmit }) {
   const accountRef = useRef();
   const passwordRef = useRef();
+  const usernameRef = useRef();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -17,31 +17,29 @@ export default function Login({ onIdSubmit, setShowLogin }) {
       method: "post",
       url: axiosUrl,
       data: {
-        query: `mutation Login($account: String!, $password: String!) {
-          login(account: $account, password: $password) {
-            token
-            member {
-              uuid
-              username
-              updatedAt
-              image
-              createdAt
-              account
-            }
+        query: `mutation Register($data: registerInput) {
+          register(data: $data) {
+            uuid
+            username
+            updatedAt
+            image
+            account
+            createdAt
           }
-        }
-        `,
+        }`,
         variables: {
-          account: accountRef.current.value,
-          password: passwordRef.current.value,
+          data: {
+            account: accountRef.current.value,
+            password: passwordRef.current.value,
+            username: usernameRef.current.value,
+          },
         },
       },
     });
-    const data = res?.data?.data?.login;
-    if (data) {
-      onIdSubmit(data.member.uuid);
-    } else {
-      window.alert("Incorrect ID. Please check your input and try again.");
+
+    const data = res?.data?.data?.register;
+    if (data.uuid) {
+      onIdSubmit(data.uuid);
     }
   }
 
@@ -56,11 +54,10 @@ export default function Login({ onIdSubmit, setShowLogin }) {
           <Form.Control type="text" ref={accountRef} required />
           <Form.Label>Password</Form.Label>
           <Form.Control type="text" ref={passwordRef} required />
+          <Form.Label>Username</Form.Label>
+          <Form.Control type="text" ref={usernameRef} required />
         </Form.Group>
         <Button type="submit" className="mr-2">
-          Login
-        </Button>
-        <Button onClick={() => setShowLogin(false)} variant="secondary">
           Register
         </Button>
       </Form>
