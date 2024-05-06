@@ -4,7 +4,7 @@ import Conversations from "./Conversations";
 import Contacts from "./Contacts";
 import NewContactModal from "./NewContactModal";
 import NewConversationModal from "./NewConversationModal";
-import { PREFIX } from "../lib/Constant.js";
+import { PREFIX } from "../lib/constants.js";
 
 const CONVERSATIONS_KEY = "conversations";
 const CONTACTS_KEY = "contacts";
@@ -35,7 +35,7 @@ export default function Sidebar({ id }) {
             <Conversations />
           </Tab.Pane>
           <Tab.Pane eventKey={CONTACTS_KEY}>
-            <Contacts uuid={id} />
+            <Contacts />
           </Tab.Pane>
         </Tab.Content>
 
@@ -60,7 +60,7 @@ export default function Sidebar({ id }) {
 
       <Modal show={modalOpen} onHide={closeModal}>
         {conversationsOpen ? (
-          <NewConversationModal closeModal={closeModal} uuid={id} />
+          <NewConversationModal closeModal={closeModal} />
         ) : (
           <NewContactModal closeModal={closeModal} />
         )}

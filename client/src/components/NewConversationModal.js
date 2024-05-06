@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
-import axios from "axios";
-// import { useContacts } from "../contexts/ContactsProvider";
+import { useContacts } from "../contexts/ContactsProvider";
 import { useConversations } from "../contexts/ConversationsProvider";
-import { axiosUrl } from "../lib/Constant.js";
 
-export default function NewConversationModal({ closeModal, uuid }) {
+export default function NewConversationModal({ closeModal }) {
   const [selectedContactIds, setSelectedContactIds] = useState([]);
-  const [contacts, setContacts] = useState([]);
-  // const { contacts } = useContacts();
+  const { contacts } = useContacts();
   const { createConversation } = useConversations();
 
   function handleSubmit(e) {
@@ -29,58 +26,6 @@ export default function NewConversationModal({ closeModal, uuid }) {
       }
     });
   }
-
-  // 用很醜的方式整理 contacts，這個要從後端檢查能否讓前端不要做這麼多處理(篩選出不重複的聯絡人)
-  useEffect(() => {
-    axios({
-      method: "post",
-      url: axiosUrl,
-      data: {
-        query: `query GetContactsByMemberUuid($uuid: String!) {
-            getContactsByMemberUuid(uuid: $uuid) {
-              memberUuid
-              contactMemberUuid
-              createdAt
-              receivedContact {
-                username
-                uuid
-              }
-              sentContact {
-                uuid
-                username
-              }
-            }
-          }`,
-        variables: { uuid: uuid },
-      },
-    }).then((res) => {
-      const data = res?.data?.data?.getContactsByMemberUuid;
-      if (data) {
-        const uniqueContacts = new Map();
-
-        data.forEach((item) => {
-          let contactId, contactName;
-
-          if (item.memberUuid === uuid) {
-            contactId = item.receivedContact.uuid;
-            contactName = item.receivedContact.username;
-          } else {
-            contactId = item.sentContact.uuid;
-            contactName = item.sentContact.username;
-          }
-
-          uniqueContacts.set(contactId, contactName);
-        });
-
-        const contactIds = Array.from(uniqueContacts).map(([id, name]) => ({
-          id,
-          name,
-        }));
-
-        setContacts(contactIds);
-      }
-    });
-  }, []);
 
   return (
     <>

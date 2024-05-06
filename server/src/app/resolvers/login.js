@@ -1,14 +1,35 @@
-// 簡易登入，沒有密碼，只要輸入 uuid，之後要補 JWT
+// 之後前端、後端 api 要加上 JWT token 驗證
 import { GraphQLError } from "graphql";
-import { extensions } from "../../utils/constant.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import config from "config";
+import { extensions } from "../../utils/constants.js";
+
+const jwtConfig = config.get("jwt");
 
 export const login = async (_, args, contextValue) => {
+  const { account, password } = args;
+
   try {
-    return await contextValue.prisma.Member.findUnique({
+    const member = await contextValue.prisma.Member.findUnique({
       where: {
-        uuid: args.uuid,
+        account,
       },
     });
+    if (!member) {
+      throw new GraphQLError("No member found with this login account.");
+    }
+
+    const isValid = await bcrypt.compare(password, member.password);
+    if (!isValid) {
+      throw new GraphQLError("Invalid password.");
+    }
+
+    const token = jwt.sign({ account }, jwtConfig.secret, {
+      expiresIn: "1h",
+    });
+
+    return { member, token };
   } catch (error) {
     throw new GraphQLError(`login error: ${error}`, {
       extensions,

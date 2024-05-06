@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import { extensions } from "../../utils/constant.js";
+import { extensions } from "../../utils/constants.js";
 
 export const getChatRoomsByMemberUuid = async (_, args, contextValue) => {
   try {

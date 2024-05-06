@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import { extensions } from "../../utils/constant.js";
+import { extensions } from "../../utils/constants.js";
 
 export const getMember = async (_, args, contextValue) => {
   try {
@@ -15,12 +15,11 @@ export const getMember = async (_, args, contextValue) => {
   }
 };
 
-
 export const getMembers = async (_, args, contextValue) => {
   try {
     return await contextValue.prisma.Member.findMany({
       orderBy: {
-        id: 'asc'
+        id: "asc",
       },
     });
   } catch (error) {

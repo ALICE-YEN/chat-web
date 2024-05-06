@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 import axios from "axios";
 import { useContacts } from "../contexts/ContactsProvider";
-import { PREFIX, axiosUrl } from "../lib/Constant";
+import { PREFIX, axiosUrl } from "../lib/constants";
 
 export default function NewContactModal({ closeModal }) {
   const idRef = useRef();

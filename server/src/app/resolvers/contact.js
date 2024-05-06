@@ -1,6 +1,6 @@
 // 要記得剔除重複 memberUuid, contactMemberUuid
 import { GraphQLError } from "graphql";
-import { extensions } from "../../utils/constant.js";
+import { extensions } from "../../utils/constants.js";
 
 export const getContactsByMemberUuid = async (_, args, contextValue) => {
   try {

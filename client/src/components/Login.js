@@ -1,15 +1,12 @@
 // 可以縮寫 rfc，產生模板
 
-import React, { useRef,useEffect } from "react";
+import React, { useRef } from "react";
 import axios from "axios";
 import { Container, Form, Button } from "react-bootstrap";
-import {  axiosUrl } from "../lib/Constant.js";
+import { axiosUrl } from "../lib/constants.js";
 
 export default function Login({ onIdSubmit }) {
   const idRef = useRef();
-  useEffect(()=>{
-    console.log("idRef.current.value", idRef.current?.value);
-  })
 
   async function handleSubmit(e) {
     e.preventDefault(); // prevent the page from refreshing

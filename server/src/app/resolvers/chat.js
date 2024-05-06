@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import { extensions } from "../../utils/constant.js";
+import { extensions } from "../../utils/constants.js";
 
 export const createChat = async (_, args, contextValue) => {
   const { sender, recipients, content, chatRoomId } = args.data;

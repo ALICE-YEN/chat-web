@@ -10,6 +10,8 @@ datasource db {
 model Member {
   id        Int      @id @default(autoincrement())
   uuid      String   @unique @default(uuid()) @db.Uuid
+  account   String   @unique // 不可更改
+  password  String   @db.VarChar(60) // 存加密後的密碼
   username  String?  @db.VarChar(15)
   image     String?
   createdAt DateTime @default(now()) @map("created_at")

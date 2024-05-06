@@ -1,27 +1,23 @@
-// 簡易註冊，沒有密碼
 import { GraphQLError } from "graphql";
 import { v4 as uuidV4 } from "uuid";
-import { extensions } from "../../utils/constant.js";
+import { hashPassword } from "../../utils/helpers.js";
+import { extensions } from "../../utils/constants.js";
 
 export const register = async (_, args, contextValue) => {
   const uuid = uuidV4();
-  console.log("uuid", uuid);
+  const { account, password, username, image } = args.data;
+  const hashedPassword = await hashPassword(password);
 
   try {
-    const res = await contextValue.prisma.Member.create({
+    return await contextValue.prisma.Member.create({
       data: {
         uuid,
-        username: args?.name,
-        image: args?.image,
+        account,
+        password: hashedPassword,
+        username,
+        image,
       },
     });
-    console.log("register res", res);
-
-    return {
-      uuid,
-      name: args?.name,
-      image: args?.image,
-    };
   } catch (error) {
     throw new GraphQLError(`register error: ${error}`, {
       extensions,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PREFIX } from "../lib/Constant.js";
+import { PREFIX } from "../lib/constants.js";
 
 export default function useLocalStorage(key, initialValue) {
   const prefixedKey = PREFIX + key;

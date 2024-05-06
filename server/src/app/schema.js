@@ -8,8 +8,8 @@ export const typeDefs = `
   }
 
   type Mutation {
-    login(uuid: String!): Member
-    register(name: String, image: String, contacts: [String!]): Member
+    login(account: String!, password: String!): LoginOutput
+    register(data: registerInput): Member
     connectContact(memberUuid: String!, contactMemberUuid: String!): Contact
     createChat(data: createChatInput): Chat
     createChatRoom(members: [String!]): ChatRoom
@@ -18,6 +18,7 @@ export const typeDefs = `
 
   type Member {
     uuid: String!
+    account: String!
     username: String
     image: String
     createdAt: DateTime!
@@ -57,6 +58,18 @@ export const typeDefs = `
     chatRoom: ChatRoom!
     chatSender: Member!
     recipients: [Member!]
+  }
+
+  type LoginOutput {
+    member: Member
+    token: String
+  }
+
+  input registerInput {
+    account: String!
+    password: String!
+    username: String!
+    image: String
   }
 
   input createChatInput {

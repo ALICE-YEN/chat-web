@@ -2,7 +2,8 @@ import React, { useContext, useState, useEffect, useCallback } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import axios from "axios";
 import { useSocket } from "./SocketProvider";
-import { axiosUrl } from "../lib/Constant.js";
+import { useContacts } from "./ContactsProvider";
+import { axiosUrl } from "../lib/constants.js";
 
 const ConversationsContext = React.createContext();
 
@@ -16,61 +17,12 @@ export function ConversationsProvider({ id, children }) {
     []
   );
   const [selectedConversationIndex, setSelectedConversationIndex] = useState(0);
-  const [contacts, setContacts] = useState([]);
-  // const { contacts } = useContacts();
+  const { contacts } = useContacts();
   const socket = useSocket();
 
   // GetContactsByMemberUuid、GetChatRoomsByMemberUuid 應該可以整併成一個 api，否則就失去 graphQL 的優勢
   // 用很醜的方式整理 contacts，這個要從後端檢查能否讓前端不要做這麼多處理(篩選出不重複的聯絡人)
   useEffect(() => {
-    // 取得連絡人
-    axios({
-      method: "post",
-      url: axiosUrl,
-      data: {
-        query: `query GetContactsByMemberUuid($uuid: String!) {
-            getContactsByMemberUuid(uuid: $uuid) {
-              memberUuid
-              receivedContact {
-                username
-                uuid
-              }
-              sentContact {
-                uuid
-                username
-              }
-            }
-          }`,
-        variables: { uuid: id },
-      },
-    }).then((res) => {
-      const data = res?.data?.data?.getContactsByMemberUuid;
-      if (data) {
-        const uniqueContacts = new Map();
-
-        data.forEach((item) => {
-          let contactId, contactName;
-
-          if (item.memberUuid === id) {
-            contactId = item.receivedContact.uuid;
-            contactName = item.receivedContact.username;
-          } else {
-            contactId = item.sentContact.uuid;
-            contactName = item.sentContact.username;
-          }
-
-          uniqueContacts.set(contactId, contactName);
-        });
-
-        const contactIds = Array.from(uniqueContacts).map(([id, name]) => ({
-          id,
-          name,
-        }));
-
-        setContacts(contactIds);
-      }
-    });
-
     // 取得聊天室
     axios({
       method: "post",
